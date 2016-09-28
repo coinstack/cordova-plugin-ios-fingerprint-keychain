@@ -123,12 +123,6 @@ NSString *keychainItemServiceName;
     {
       NSLog(@"Fingerprint or device passcode could not be validated. Status %d.", (int) userPresenceStatus);
 
-      // NSError *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:userPresenceStatus userInfo:nil];
-      // NSArray *errorKeys = @[@"code", @"localizedDescription"];
-      // [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
-      //                                                      messageAsDictionary:[error dictionaryWithValuesForKeys:errorKeys]]
-      //                             callbackId:callbackId];
-
       NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
       dict[@"status"] = @"error";
       dict[@"error"] = [NSNumber numberWithInteger:userPresenceStatus];
@@ -161,6 +155,7 @@ NSString *keychainItemServiceName;
                                    keyID, kSecAttrAccount,
                                    keychainItemServiceName, kSecAttrService,
                                    message, kSecUseOperationPrompt,
+                                   @YES, kSecReturnData,
                                    nil];
 
     // Start the query and the fingerprint scan and/or device passcode validation
@@ -195,6 +190,14 @@ NSString *keychainItemServiceName;
 
 // Note that this needs to run only once but it can deal with multiple runs
 - (BOOL) createKeyChainEntry:(NSData*)data id:(NSString*)keychainItemIdentifier {
+  // delete item first
+  NSMutableDictionary	* delAttributes = [[NSMutableDictionary alloc] initWithObjectsAndKeys:
+                                      keychainItemIdentifier, kSecAttrAccount,
+                                      (__bridge id)(kSecClassGenericPassword), kSecClass,
+                                      nil];
+  SecItemDelete((__bridge CFDictionaryRef)delAttributes);
+
+
   NSMutableDictionary	* attributes = [[NSMutableDictionary alloc] initWithObjectsAndKeys:
                                       (__bridge id)(kSecClassGenericPassword), kSecClass,
                                       keychainItemIdentifier, kSecAttrAccount,
