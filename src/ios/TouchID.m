@@ -119,6 +119,14 @@ NSString *keychainItemServiceName;
                                                             messageAsDictionary:dict]
                                 callbackId:command.callbackId];
     }
+    else if (errSecUserCanceled == userPresenceStatus) {
+      NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
+      dict[@"status"] = @"cancelled";
+      [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK  
+                                                            messageAsDictionary:dict]
+                                callbackId:command.callbackId];
+      return;
+    }
     else
     {
       NSLog(@"Fingerprint or device passcode could not be validated. Status %d.", (int) userPresenceStatus);
@@ -174,15 +182,25 @@ NSString *keychainItemServiceName;
                                                             messageAsDictionary:dict]
                                 callbackId:command.callbackId];
     }
+    else if (errSecUserCanceled == userPresenceStatus) {
+      NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
+      dict[@"status"] = @"cancelled";
+      [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK  
+                                                            messageAsDictionary:dict]
+                                callbackId:command.callbackId];
+      return;
+    }
     else
     {
       NSLog(@"Fingerprint or device passcode could not be validated. Status %d.", (int) userPresenceStatus);
 
-      NSError *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:userPresenceStatus userInfo:nil];
-      NSArray *errorKeys = @[@"code", @"localizedDescription"];
-      [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
-                                                           messageAsDictionary:[error dictionaryWithValuesForKeys:errorKeys]]
-                                  callbackId:callbackId];
+      NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
+      dict[@"status"] = @"error";
+      dict[@"error"] = [NSNumber numberWithInteger:userPresenceStatus];
+      dict[@"cause"] = @"failed to access keychain entry";
+      [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK  
+                                                            messageAsDictionary:dict]
+                                callbackId:command.callbackId];
       return;
     }
   }];
