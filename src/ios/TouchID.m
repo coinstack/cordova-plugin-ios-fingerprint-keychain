@@ -12,7 +12,14 @@ NSString *keychainItemServiceName;
 - (void) isAvailable:(CDVInvokedUrlCommand*)command {
 
   if (NSClassFromString(@"LAContext") == NULL) {
-    [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR] callbackId:command.callbackId];
+    NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
+    dict[@"isAvailable"] = [NSNumber numberWithBool:NO];
+    dict[@"hasEnrolledFingerprints"] = [NSNumber numberWithBool:NO];
+    dict[@"isHardwareDetected"] = [NSNumber numberWithBool:NO];
+
+    [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK  
+                                                            messageAsDictionary:dict]
+                                callbackId:command.callbackId];
     return;
   }
 
@@ -21,14 +28,6 @@ NSString *keychainItemServiceName;
     NSError *error = nil;
     LAContext *laContext = [[LAContext alloc] init];
 
-    // if ([laContext canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:&error]) {
-    //   [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK]
-    //                               callbackId:command.callbackId];
-    // } else {
-    //   NSArray *errorKeys = @[@"code", @"localizedDescription"];
-    //   [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:[error dictionaryWithValuesForKeys:errorKeys]]
-    //                               callbackId:command.callbackId];
-    // }
     bool canEvalPolicy = [laContext canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:&error];
     NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
     if (canEvalPolicy) {
