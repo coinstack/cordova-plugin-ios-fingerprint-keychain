@@ -39,8 +39,10 @@ NSString *keychainItemServiceName;
       if (error.code == LAErrorTouchIDNotEnrolled) {
         dict[@"hasEnrolledFingerprints"] = [NSNumber numberWithBool:NO];
         dict[@"isHardwareDetected"] = [NSNumber numberWithBool:YES];
-      }
-      if (error.code == LAErrorTouchIDNotAvailable) {
+      } else if (error.code == LAErrorTouchIDNotAvailable) {
+        dict[@"hasEnrolledFingerprints"] = [NSNumber numberWithBool:NO];
+        dict[@"isHardwareDetected"] = [NSNumber numberWithBool:NO];
+      } else {
         dict[@"hasEnrolledFingerprints"] = [NSNumber numberWithBool:NO];
         dict[@"isHardwareDetected"] = [NSNumber numberWithBool:NO];
       }
