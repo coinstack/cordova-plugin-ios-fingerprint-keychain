@@ -29,4 +29,5 @@ FingerprintKey.prototype.isAvailable = function(successCallback, errorCallback) 
 };
 
 FingerprintKey = new FingerprintKey();
+window.FingerprintKey = FingerprintKey;
 module.exports = FingerprintKey;
