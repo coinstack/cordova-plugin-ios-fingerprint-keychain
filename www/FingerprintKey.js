@@ -72,12 +72,7 @@ if (checker.iphone) {
     };
 
     FingerprintKey.prototype.isAvailable = function(successCallback, errorCallback) {
-        cordova.exec(function(res) {
-            if (res.ok) {
-                status.isAvailable = res.isAvailable;
-            }
-            successCallback(res);
-        }, errorCallback, "TouchID", "isAvailable", []);
+        cordova.exec(successCallback, errorCallback, "TouchID", "isAvailable", []);
     };
 } else if (checker.android) {
     FingerprintKey.prototype.getDevice = function() {
