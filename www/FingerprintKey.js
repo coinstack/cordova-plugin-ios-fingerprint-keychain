@@ -11,6 +11,22 @@ var checker = {
     android: ua.match(/Android/)
 };
 
+var errors = {
+    TOO_MANY_TRIES: {
+        code: -101,
+        message: "Fingerprint is disabled due to too many tries",
+    },
+    KEY_NOT_FOUND: {
+        code: -102,
+        message: "Fingerprint key is not initialized",
+    },
+    FINGERPRINT_NOT_AVAILABLE: {
+        code: -103,
+        message: "Fingerprint capability is not accessible",
+    }
+}
+
+FingerprintKey.prototype.errors = errors;
 if (checker.iphone) {
     FingerprintKey.prototype.getDevice = function() {
         return "iOS";
@@ -20,6 +36,16 @@ if (checker.iphone) {
             function(res) {
                 if (res.status == "ok") {
                     res.key = createKeyFromHexSeed(res.key);
+                } else if (res.status == "error") {
+                    res.cause = res.error;
+                    if (res.error == -25293) {
+                        res.error = errors.FINGERPRINT_NOT_AVAILABLE;
+                        return;
+                    } else if (res.error == -25300) {
+                        res.error = errors.KEY_NOT_FOUND;
+                    } else {
+                        res.error = errors.FINGERPRINT_NOT_AVAILABLE;
+                    }
                 }
                 successCallback(res);
             }, errorCallback, "TouchID", "initKey", [params.keyId, params.message]);
@@ -30,13 +56,28 @@ if (checker.iphone) {
             function(res) {
                 if (res.status == "ok") {
                     res.key = createKeyFromHexSeed(res.key);
+                } else if (res.status == "error") {
+                    res.cause = res.error;
+                    if (res.error == -25293) {
+                        res.error = errors.FINGERPRINT_NOT_AVAILABLE;
+                        return;
+                    } else if (res.error == -25300) {
+                        res.error = errors.KEY_NOT_FOUND;
+                    } else {
+                        res.error = errors.FINGERPRINT_NOT_AVAILABLE;
+                    }
                 }
                 successCallback(res);
             }, errorCallback, "TouchID", "fetchKey", [params.keyId, params.message]);
     };
 
     FingerprintKey.prototype.isAvailable = function(successCallback, errorCallback) {
-        cordova.exec(successCallback, errorCallback, "TouchID", "isAvailable", []);
+        cordova.exec(function(res) {
+            if (res.ok) {
+                status.isAvailable = res.isAvailable;
+            }
+            successCallback(res);
+        }, errorCallback, "TouchID", "isAvailable", []);
     };
 } else if (checker.android) {
     FingerprintKey.prototype.getDevice = function() {
@@ -47,6 +88,15 @@ if (checker.iphone) {
             function(res) {
                 if (res.status == "ok") {
                     res.key = createKeyFromHexSeed(res.key);
+                } else if (res.status == "error") {
+                    res.cause = res.error;
+                    if (res.error == 7) {
+                        res.error = errors.TOO_MANY_TRIES;
+                    } else if (res.error == -314) {
+                        res.error = errors.KEY_NOT_FOUND;
+                    } else {
+                        res.error = errors.FINGERPRINT_NOT_AVAILABLE;
+                    }
                 }
                 successCallback(res);
             },
@@ -64,6 +114,15 @@ if (checker.iphone) {
             function(res) {
                 if (res.status == "ok") {
                     res.key = createKeyFromHexSeed(res.key);
+                } else if (res.status == "error") {
+                    res.cause = res.error;
+                    if (res.error == 7) {
+                        res.error = errors.TOO_MANY_TRIES;
+                    } else if (res.error == -314) {
+                        res.error = errors.KEY_NOT_FOUND;
+                    } else {
+                        res.error = errors.FINGERPRINT_NOT_AVAILABLE;
+                    }
                 }
                 successCallback(res);
             },
