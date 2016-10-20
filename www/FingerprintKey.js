@@ -27,6 +27,13 @@ var errors = {
 }
 
 FingerprintKey.prototype.errors = errors;
+
+var status = {
+    
+}
+
+FingerprintKey.prototype.status = status;
+
 if (checker.iphone) {
     FingerprintKey.prototype.getDevice = function() {
         return "iOS";
@@ -35,11 +42,21 @@ if (checker.iphone) {
         cordova.exec(
             function(res) {
                 if (res.status == "ok") {
+                    status.isAvailable = true;
                     res.key = createKeyFromHexSeed(res.key);
                 } else if (res.status == "error") {
                     res.cause = res.error;
                     if (res.error == -25293) {
-                        res.error = errors.FINGERPRINT_NOT_AVAILABLE;
+                        cordova.exec(function(res2) {
+                            if (res2.isAvailable) {
+                                res.error = errors.TOO_MANY_TRIES;
+                            } else {
+                                res.error = errors.FINGERPRINT_NOT_AVAILABLE;
+                            }
+                            successCallback(res);
+                        }, function(err) {
+                            errorCallback(err);
+                        }, "TouchID", "isAvailable", []);
                         return;
                     } else if (res.error == -25300) {
                         res.error = errors.KEY_NOT_FOUND;
@@ -55,11 +72,21 @@ if (checker.iphone) {
         cordova.exec(
             function(res) {
                 if (res.status == "ok") {
+                    status.isAvailable = true;
                     res.key = createKeyFromHexSeed(res.key);
                 } else if (res.status == "error") {
                     res.cause = res.error;
                     if (res.error == -25293) {
-                        res.error = errors.FINGERPRINT_NOT_AVAILABLE;
+                        cordova.exec(function(res2) {
+                            if (res2.isAvailable) {
+                                res.error = errors.TOO_MANY_TRIES;
+                            } else {
+                                res.error = errors.FINGERPRINT_NOT_AVAILABLE;
+                            }
+                            successCallback(res);
+                        }, function(err) {
+                            errorCallback(err);
+                        }, "TouchID", "isAvailable", []);
                         return;
                     } else if (res.error == -25300) {
                         res.error = errors.KEY_NOT_FOUND;
@@ -68,11 +95,15 @@ if (checker.iphone) {
                     }
                 }
                 successCallback(res);
-            }, errorCallback, "TouchID", "fetchKey", [params.keyId, params.message]);
+            },
+            errorCallback, "TouchID", "fetchKey", [params.keyId, params.message]);
     };
 
     FingerprintKey.prototype.isAvailable = function(successCallback, errorCallback) {
-        cordova.exec(successCallback, errorCallback, "TouchID", "isAvailable", []);
+        cordova.exec(function(res) {
+            status.available = res.isAvailable;
+            successCallback(res);
+        }, errorCallback, "TouchID", "isAvailable", []);
     };
 } else if (checker.android) {
     FingerprintKey.prototype.getDevice = function() {
