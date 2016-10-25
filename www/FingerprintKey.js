@@ -35,6 +35,21 @@
 
     FingerprintKey.prototype.status = status;
 
+    var statePrefix = "blockfingerprintkey_state_"
+    FingerprintKey.prototype.getState = function(key) {
+        if (!key) {
+            key = "";
+        }
+        return localStorage.getItem(statePrefix + key);
+    }
+
+    FingerprintKey.prototype.setState = function(key, state) {
+        if (!key) {
+            key = "";
+        }
+        return localStorage.setItem(statePrefix + key, state);
+    }
+
     if (checker.iphone) {
         FingerprintKey.prototype.getDevice = function () {
             return "iOS";
