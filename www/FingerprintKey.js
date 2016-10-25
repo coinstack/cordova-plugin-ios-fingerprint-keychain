@@ -1,17 +1,16 @@
-function createKeyFromHexSeed(seed) {
+function FingerprintKey() { }
+
+FingerprintKey.prototype.createKeyFromHexSeed = function (seed) {
     return CoinStack.Util.bitcoin().HDNode.fromSeedHex(seed, CoinStack.Util.bitcoin().networks.bitcoin).privKey.toWIF()
 }
 
-function FingerprintKey() {}
-
-var ua = navigator.userAgent;
-var checker = {
-    iphone: ua.match(/(iPhone|iPod|iPad)/),
-    blackberry: ua.match(/BlackBerry/),
-    android: ua.match(/Android/)
+FingerprintKey.prototype.checker = {
+    iphone: navigator.userAgent.match(/(iPhone|iPod|iPad)/),
+    blackberry: navigator.userAgent.match(/BlackBerry/),
+    android: navigator.userAgent.match(/Android/)
 };
 
-var errors = {
+FingerprintKey.prototype.errors = {
     TOO_MANY_TRIES: {
         code: -101,
         message: "Fingerprint is disabled due to too many tries",
@@ -24,74 +23,66 @@ var errors = {
         code: -103,
         message: "Fingerprint capability is not accessible",
     }
-}
+};
 
-FingerprintKey.prototype.errors = errors;
-
-var status = {
-    
-}
-
-FingerprintKey.prototype.status = status;
-
-if (checker.iphone) {
-    FingerprintKey.prototype.getDevice = function() {
+if (FingerprintKey.prototype.checker.iphone) {
+    FingerprintKey.prototype.getDevice = function () {
         return "iOS";
     }
-    FingerprintKey.prototype.initKey = function(params, successCallback, errorCallback) {
+    FingerprintKey.prototype.initKey = function (params, successCallback, errorCallback) {
         cordova.exec(
-            function(res) {
+            function (res) {
                 if (res.status == "ok") {
                     status.isAvailable = true;
-                    res.key = createKeyFromHexSeed(res.key);
+                    res.key = this.createKeyFromHexSeed(res.key);
                 } else if (res.status == "error") {
                     res.cause = res.error;
                     if (res.error == -25293) {
-                        cordova.exec(function(res2) {
+                        cordova.exec(function (res2) {
                             if (res2.isAvailable) {
-                                res.error = errors.TOO_MANY_TRIES;
+                                res.error = this.errors.TOO_MANY_TRIES;
                             } else {
-                                res.error = errors.FINGERPRINT_NOT_AVAILABLE;
+                                res.error = this.errors.FINGERPRINT_NOT_AVAILABLE;
                             }
                             successCallback(res);
-                        }, function(err) {
+                        }, function (err) {
                             errorCallback(err);
                         }, "TouchID", "isAvailable", []);
                         return;
                     } else if (res.error == -25300) {
-                        res.error = errors.KEY_NOT_FOUND;
+                        res.error = this.errors.KEY_NOT_FOUND;
                     } else {
-                        res.error = errors.FINGERPRINT_NOT_AVAILABLE;
+                        res.error = this.errors.FINGERPRINT_NOT_AVAILABLE;
                     }
                 }
                 successCallback(res);
             }, errorCallback, "TouchID", "initKey", [params.keyId, params.message]);
     };
 
-    FingerprintKey.prototype.fetchKey = function(params, successCallback, errorCallback) {
+    FingerprintKey.prototype.fetchKey = function (params, successCallback, errorCallback) {
         cordova.exec(
-            function(res) {
+            function (res) {
                 if (res.status == "ok") {
                     status.isAvailable = true;
                     res.key = createKeyFromHexSeed(res.key);
                 } else if (res.status == "error") {
                     res.cause = res.error;
                     if (res.error == -25293) {
-                        cordova.exec(function(res2) {
+                        cordova.exec(function (res2) {
                             if (res2.isAvailable) {
-                                res.error = errors.TOO_MANY_TRIES;
+                                res.error = this.errors.TOO_MANY_TRIES;
                             } else {
-                                res.error = errors.FINGERPRINT_NOT_AVAILABLE;
+                                res.error = this.errors.FINGERPRINT_NOT_AVAILABLE;
                             }
                             successCallback(res);
-                        }, function(err) {
+                        }, function (err) {
                             errorCallback(err);
                         }, "TouchID", "isAvailable", []);
                         return;
                     } else if (res.error == -25300) {
-                        res.error = errors.KEY_NOT_FOUND;
+                        res.error = this.errors.KEY_NOT_FOUND;
                     } else {
-                        res.error = errors.FINGERPRINT_NOT_AVAILABLE;
+                        res.error = this.errors.FINGERPRINT_NOT_AVAILABLE;
                     }
                 }
                 successCallback(res);
@@ -99,29 +90,29 @@ if (checker.iphone) {
             errorCallback, "TouchID", "fetchKey", [params.keyId, params.message]);
     };
 
-    FingerprintKey.prototype.isAvailable = function(successCallback, errorCallback) {
-        cordova.exec(function(res) {
+    FingerprintKey.prototype.isAvailable = function (successCallback, errorCallback) {
+        cordova.exec(function (res) {
             status.available = res.isAvailable;
             successCallback(res);
         }, errorCallback, "TouchID", "isAvailable", []);
     };
-} else if (checker.android) {
-    FingerprintKey.prototype.getDevice = function() {
+} else if (FingerprintKey.prototype.checker.android) {
+    FingerprintKey.prototype.getDevice = function () {
         return "Android";
     }
-    FingerprintKey.prototype.initKey = function(params, successCallback, errorCallback) {
+    FingerprintKey.prototype.initKey = function (params, successCallback, errorCallback) {
         cordova.exec(
-            function(res) {
+            function (res) {
                 if (res.status == "ok") {
                     res.key = createKeyFromHexSeed(res.key);
                 } else if (res.status == "error") {
                     res.cause = res.error;
                     if (res.error == 7) {
-                        res.error = errors.TOO_MANY_TRIES;
+                        res.error = this.errors.TOO_MANY_TRIES;
                     } else if (res.error == -314) {
-                        res.error = errors.KEY_NOT_FOUND;
+                        res.error = this.errors.KEY_NOT_FOUND;
                     } else {
-                        res.error = errors.FINGERPRINT_NOT_AVAILABLE;
+                        res.error = this.errors.FINGERPRINT_NOT_AVAILABLE;
                     }
                 }
                 successCallback(res);
@@ -135,19 +126,19 @@ if (checker.iphone) {
         );
     };
 
-    FingerprintKey.prototype.fetchKey = function(params, successCallback, errorCallback) {
+    FingerprintKey.prototype.fetchKey = function (params, successCallback, errorCallback) {
         cordova.exec(
-            function(res) {
+            function (res) {
                 if (res.status == "ok") {
                     res.key = createKeyFromHexSeed(res.key);
                 } else if (res.status == "error") {
                     res.cause = res.error;
                     if (res.error == 7) {
-                        res.error = errors.TOO_MANY_TRIES;
+                        res.error = this.errors.TOO_MANY_TRIES;
                     } else if (res.error == -314) {
-                        res.error = errors.KEY_NOT_FOUND;
+                        res.error = this.errors.KEY_NOT_FOUND;
                     } else {
-                        res.error = errors.FINGERPRINT_NOT_AVAILABLE;
+                        res.error = this.errors.FINGERPRINT_NOT_AVAILABLE;
                     }
                 }
                 successCallback(res);
@@ -161,7 +152,7 @@ if (checker.iphone) {
         );
     };
 
-    FingerprintKey.prototype.isAvailable = function(successCallback, errorCallback) {
+    FingerprintKey.prototype.isAvailable = function (successCallback, errorCallback) {
         cordova.exec(
             successCallback,
             errorCallback,
