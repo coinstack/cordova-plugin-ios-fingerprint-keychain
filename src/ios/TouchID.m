@@ -9,6 +9,30 @@ static NSString *const FingerprintDatabaseStateKey = @"FingerprintDatabaseStateK
 // These two combined need to be unique, so one can be fixed
 NSString *keychainItemServiceName;
 
+
+- (void) checkPasscode:(CDVInvokedUrlCommand*)command {
+  NSString *message = [command.arguments objectAtIndex:0];
+  LAContext *laContext = [[LAContext alloc] init];
+  [laContext evaluatePolicy:LAPolicyDeviceOwnerAuthentication localizedReason:NSLocalizedString(message, nil) reply:
+  ^(BOOL success, NSError *authenticationError) {
+    if (success) {
+      NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
+      dict[@"passed"] = [NSNumber numberWithBool:YES];
+      [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK  
+                                                            messageAsDictionary:dict]
+                                callbackId:command.callbackId];
+      return;
+    } else {
+      NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
+      dict[@"passed"] = [NSNumber numberWithBool:NO];
+      [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK  
+                                                            messageAsDictionary:dict]
+                                callbackId:command.callbackId];
+      return;
+    }
+  }];
+}
+
 - (void) isAvailable:(CDVInvokedUrlCommand*)command {
 
   if (NSClassFromString(@"LAContext") == NULL) {

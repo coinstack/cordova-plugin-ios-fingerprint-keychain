@@ -121,6 +121,10 @@
                 successCallback(res);
             }, errorCallback, "TouchID", "isAvailable", []);
         };
+
+        FingerprintKey.prototype.checkPasscode = function (params, successCallback, errorCallback) {
+            cordova.exec(successCallback, errorCallback, "TouchID", "checkPasscode", [params.message]);
+        };
     } else if (checker.android) {
         FingerprintKey.prototype.getDevice = function () {
             return "Android";
