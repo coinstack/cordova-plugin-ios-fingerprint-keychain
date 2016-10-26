@@ -36,14 +36,14 @@
     FingerprintKey.prototype.status = status;
 
     var statePrefix = "blockfingerprintkey_state_"
-    FingerprintKey.prototype.getState = function(key) {
+    FingerprintKey.prototype.getState = function (key) {
         if (!key) {
             key = "";
         }
         return localStorage.getItem(statePrefix + key);
     }
 
-    FingerprintKey.prototype.setState = function(key, state) {
+    FingerprintKey.prototype.setState = function (key, state) {
         if (!key) {
             key = "";
         }
@@ -125,6 +125,19 @@
         FingerprintKey.prototype.getDevice = function () {
             return "Android";
         }
+
+        FingerprintKey.prototype.lock = function (params, successCallback, errorCallback) {
+            cordova.exec(
+                successCallback,
+                errorCallback,
+                "FingerprintKey", // Java Class
+                "lock", // action
+                [ // Array of arguments to pass to the Java class
+                    params
+                ]
+            );
+        };
+
         FingerprintKey.prototype.initKey = function (params, successCallback, errorCallback) {
             cordova.exec(
                 function (res) {
