@@ -1,6 +1,7 @@
 #import "TouchID.h"
 #import <LocalAuthentication/LocalAuthentication.h>
 #import <Security/Security.h>
+#include <sys/sysctl.h>
 
 static NSString *const FingerprintDatabaseStateKey = @"FingerprintDatabaseStateKey";
 
@@ -33,13 +34,43 @@ NSString *keychainItemServiceName;
   }];
 }
 
-- (void) isAvailable:(CDVInvokedUrlCommand*)command {
+- (NSString *)getModel {
+    size_t size;
+    sysctlbyname("hw.machine", NULL, &size, NULL, 0);
+    char *model = malloc(size);
+    sysctlbyname("hw.machine", model, &size, NULL, 0);
+    NSString *deviceModel = [NSString stringWithCString:model encoding:NSUTF8StringEncoding];
+    free(model);
+    return deviceModel;
+}
 
-  if (NSClassFromString(@"LAContext") == NULL) {
+- (void) isAvailable:(CDVInvokedUrlCommand*)command {
+  // check HW
+  UIDevice *deviceInfo = [UIDevice currentDevice];
+  NSString *version = deviceInfo.systemVersion;
+  NSArray *versionArray = [version componentsSeparatedByString:@"."];
+  version = versionArray[0];
+  int osVersion = [version integerValue];
+
+
+  NSString *model = [self getModel];
+  NSArray *array = [model componentsSeparatedByString:@","];
+  model = array[0];
+  NSRange needleRange = NSMakeRange(6, model.length - 6);
+  model = [model substringWithRange:needleRange];
+  int modelVersion = [model integerValue];
+  NSNumber *hwSupported; 
+  if (modelVersion >= 6 && osVersion >= 8) {
+    hwSupported = [NSNumber numberWithBool:YES];
+  } else {
+    hwSupported = [NSNumber numberWithBool:NO];
+  }
+
+  if (hwSupported == NO || NSClassFromString(@"LAContext") == NULL) {
     NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
     dict[@"isAvailable"] = [NSNumber numberWithBool:NO];
     dict[@"hasEnrolledFingerprints"] = [NSNumber numberWithBool:NO];
-    dict[@"isHardwareDetected"] = [NSNumber numberWithBool:NO];
+    dict[@"isHardwareDetected"] = hwSupported;
 
     [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK  
                                                             messageAsDictionary:dict]
@@ -57,21 +88,18 @@ NSString *keychainItemServiceName;
     if (canEvalPolicy) {
       dict[@"isAvailable"] = [NSNumber numberWithBool:YES];
       dict[@"hasEnrolledFingerprints"] = [NSNumber numberWithBool:YES];
-      dict[@"isHardwareDetected"] = [NSNumber numberWithBool:YES];
     } else {
       dict[@"isAvailable"] = [NSNumber numberWithBool:NO];
       if (error.code == LAErrorTouchIDNotEnrolled) {
         dict[@"hasEnrolledFingerprints"] = [NSNumber numberWithBool:NO];
-        dict[@"isHardwareDetected"] = [NSNumber numberWithBool:YES];
       } else if (error.code == LAErrorTouchIDNotAvailable) {
         dict[@"hasEnrolledFingerprints"] = [NSNumber numberWithBool:NO];
-        dict[@"isHardwareDetected"] = [NSNumber numberWithBool:NO];
       } else {
         dict[@"hasEnrolledFingerprints"] = [NSNumber numberWithBool:NO];
-        dict[@"isHardwareDetected"] = [NSNumber numberWithBool:NO];
       }
-      
     }
+
+    dict[@"isHardwareDetected"] = hwSupported;
 
     [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK  
                                                             messageAsDictionary:dict]

@@ -64,7 +64,7 @@
                         res.cause = res.error;
                         if (res.error == -25293) {
                             cordova.exec(function (res2) {
-                                if (res2.isAvailable) {
+                                if (res2.isHardwareDetected) {
                                     res.error = errors.TOO_MANY_TRIES;
                                 } else {
                                     res.error = errors.FINGERPRINT_NOT_AVAILABLE;
@@ -94,7 +94,7 @@
                         res.cause = res.error;
                         if (res.error == -25293) {
                             cordova.exec(function (res2) {
-                                if (res2.isAvailable) {
+                                if (res2.isHardwareDetected) {
                                     res.error = errors.TOO_MANY_TRIES;
                                 } else {
                                     res.error = errors.FINGERPRINT_NOT_AVAILABLE;
