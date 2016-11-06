@@ -2,15 +2,9 @@
     function createKeyFromHexSeed(seed) {
         return CoinStack.Util.bitcoin().HDNode.fromSeedHex(seed, CoinStack.Util.bitcoin().networks.bitcoin).privKey.toWIF()
     }
-
-    function checkPluginLoaded(plugin) {
-        var plugins = cordova.require("cordova/plugin_list").metadata;
-        if (typeof plugins[plugin] === "undefined") {
-            return false;
-        } else {
-            return true;
-        }
-    }
+    
+    var IOS_PLUGIN_ID = "cordova-plugin-touch-id";
+    var ANDROID_PLUGIN_ID = "cordova-plugin-android-fingerprint-key";
 
     function FingerprintKey() { }
 
@@ -63,14 +57,38 @@
         return localStorage.setItem(statePrefix + key, state);
     }
 
+
+    var pluginLoaded = false;
+
+    function checkPlugin() {
+        return pluginLoaded;
+    }
+
+    FingerprintKey.prototype.checkPlugin = checkPlugin;
+
     if (checker.iphone) {
+        document.addEventListener("deviceready", function () {
+            var plugins = cordova.require("cordova/plugin_list").metadata;
+            if (typeof plugins[IOS_PLUGIN_ID] === "undefined") {
+                // do async check to check plugin is loaded
+                cordova.exec(function () {
+                    console.log("plugin load detected");
+                    pluginLoaded = true;
+                }, function () {
+                    console.log("plugin load failure detected");
+                    pluginLoaded = false;
+                }, "TouchID", "isAvailable", []);
+            } else {
+                pluginLoaded = true;
+            }
+        }, false);
+
         FingerprintKey.prototype.getDevice = function () {
             return "iOS";
         }
-        var checkPlugin = function () { return checkPluginLoaded("cordova-plugin-touch-id2"); }
         FingerprintKey.prototype.initKey = function (params, successCallback, errorCallback) {
             if (!checkPlugin()) {
-                errorCallback({status: "error", error: errors.PLUGIN_NOT_LOADED});
+                errorCallback({ status: "error", error: errors.PLUGIN_NOT_LOADED });
                 return;
             }
             cordova.exec(function (res2) {
@@ -112,7 +130,7 @@
 
         FingerprintKey.prototype.fetchKey = function (params, successCallback, errorCallback) {
             if (!checkPlugin()) {
-                errorCallback({status: "error", error: errors.PLUGIN_NOT_LOADED});
+                errorCallback({ status: "error", error: errors.PLUGIN_NOT_LOADED });
                 return;
             }
             cordova.exec(function (res2) {
@@ -159,7 +177,7 @@
 
         FingerprintKey.prototype.isAvailable = function (successCallback, errorCallback) {
             if (!checkPlugin()) {
-                errorCallback({status: "error", error: errors.PLUGIN_NOT_LOADED});
+                errorCallback({ status: "error", error: errors.PLUGIN_NOT_LOADED });
                 return;
             }
             cordova.exec(function (res) {
@@ -170,19 +188,35 @@
 
         FingerprintKey.prototype.checkPasscode = function (params, successCallback, errorCallback) {
             if (!checkPlugin()) {
-                errorCallback({status: "error", error: errors.PLUGIN_NOT_LOADED});
+                errorCallback({ status: "error", error: errors.PLUGIN_NOT_LOADED });
                 return;
             }
             cordova.exec(successCallback, errorCallback, "TouchID", "checkPasscode", [params.message]);
         };
     } else if (checker.android) {
+        document.addEventListener("deviceready", function () {
+            var plugins = cordova.require("cordova/plugin_list").metadata;
+            if (typeof plugins[ANDROID_PLUGIN_ID] === "undefined") {
+                // do async check to check plugin is loaded
+                cordova.exec(function () {
+                    console.log("plugin load detected");
+                    pluginLoaded = true;
+                }, function (err) {
+                    console.log("plugin load failure detected");
+                    console.log(err);
+                    pluginLoaded = false;
+                }, "FingerprintKey", "availability", [{}]);
+            } else {
+                pluginLoaded = true;
+            }
+        }, false);
+
         FingerprintKey.prototype.getDevice = function () {
             return "Android";
         }
-        var checkPlugin = function () { return checkPluginLoaded("cordova-plugin-android-fingerprint-key"); }
         FingerprintKey.prototype.lock = function (params, successCallback, errorCallback) {
             if (!checkPlugin()) {
-                errorCallback({status: "error", error: errors.PLUGIN_NOT_LOADED});
+                errorCallback({ status: "error", error: errors.PLUGIN_NOT_LOADED });
                 return;
             }
             cordova.exec(
@@ -198,7 +232,7 @@
 
         FingerprintKey.prototype.initKey = function (params, successCallback, errorCallback) {
             if (!checkPlugin()) {
-                errorCallback({status: "error", error: errors.PLUGIN_NOT_LOADED});
+                errorCallback({ status: "error", error: errors.PLUGIN_NOT_LOADED });
                 return;
             }
             cordova.exec(
@@ -228,7 +262,7 @@
 
         FingerprintKey.prototype.fetchKey = function (params, successCallback, errorCallback) {
             if (!checkPlugin()) {
-                errorCallback({status: "error", error: errors.PLUGIN_NOT_LOADED});
+                errorCallback({ status: "error", error: errors.PLUGIN_NOT_LOADED });
                 return;
             }
             cordova.exec(
@@ -258,7 +292,7 @@
 
         FingerprintKey.prototype.isAvailable = function (successCallback, errorCallback) {
             if (!checkPlugin()) {
-                errorCallback({status: "error", error: errors.PLUGIN_NOT_LOADED});
+                errorCallback({ status: "error", error: errors.PLUGIN_NOT_LOADED });
                 return;
             }
             cordova.exec(
