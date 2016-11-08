@@ -65,19 +65,14 @@
 
     if (checker.iphone) {
         document.addEventListener("deviceready", function() {
-            var plugins = cordova.require("cordova/plugin_list").metadata;
-            if (typeof plugins["cordova-plugin-touch-id"] === "undefined") {
-                // do async check to check plugin is loaded
-                cordova.exec(function() {
-                    console.log("plugin load detected");
-                    pluginLoaded = true;
-                }, function() {
-                    console.log("plugin load failure detected");
-                    pluginLoaded = false;
-                }, "TouchID", "isAvailable", []);
-            } else {
+            // do async check to check plugin is loaded
+            cordova.exec(function() {
+                console.log("plugin load detected");
                 pluginLoaded = true;
-            }
+            }, function() {
+                console.log("plugin load failure detected");
+                pluginLoaded = false;
+            }, "TouchID", "isAvailable", []);
         }, false);
 
         FingerprintKey.prototype.getDevice = function() {
@@ -204,20 +199,15 @@
         };
     } else if (checker.android) {
         document.addEventListener("deviceready", function() {
-            var plugins = cordova.require("cordova/plugin_list").metadata;
-            if (typeof plugins["cordova-plugin-android-fingerprint-key"] === "undefined") {
-                // do async check to check plugin is loaded
-                cordova.exec(function() {
-                    console.log("plugin load detected");
-                    pluginLoaded = true;
-                }, function(err) {
-                    console.log("plugin load failure detected");
-                    console.log(err);
-                    pluginLoaded = false;
-                }, "FingerprintKey", "availability", [{}]);
-            } else {
+            // do async check to check plugin is loaded
+            cordova.exec(function() {
+                console.log("plugin load detected");
                 pluginLoaded = true;
-            }
+            }, function(err) {
+                console.log("plugin load failure detected");
+                console.log(err);
+                pluginLoaded = false;
+            }, "FingerprintKey", "availability", [{}]);
         }, false);
 
         FingerprintKey.prototype.getDevice = function() {
