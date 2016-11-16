@@ -60,13 +60,13 @@ NSString *keychainItemServiceName;
   model = [model substringWithRange:needleRange];
   int modelVersion = [model integerValue];
   NSNumber *hwSupported; 
-  if (modelVersion >= 6 && osVersion >= 8) {
+  if (modelVersion >= 6 && osVersion >= 9) {
     hwSupported = [NSNumber numberWithBool:YES];
   } else {
     hwSupported = [NSNumber numberWithBool:NO];
   }
 
-  if (hwSupported == NO || NSClassFromString(@"LAContext") == NULL) {
+  if ([hwSupported isEqualToNumber:[NSNumber numberWithBool:NO]] || NSClassFromString(@"LAContext") == NULL) {
     NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
     dict[@"isAvailable"] = [NSNumber numberWithBool:NO];
     dict[@"hasEnrolledFingerprints"] = [NSNumber numberWithBool:NO];
