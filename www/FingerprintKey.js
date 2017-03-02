@@ -3,7 +3,7 @@
         return CoinStack.Util.bitcoin().HDNode.fromSeedHex(seed, CoinStack.Util.bitcoin().networks.bitcoin).privKey.toWIF()
     }
 
-    function FingerprintKey() { }
+    function FingerprintKey() {}
 
     var ua = navigator.userAgent;
     var checker = {
@@ -55,24 +55,31 @@
     }
 
     // provision indexed storage
-    var request = indexedDB.open("inapp");
-    request.onerror = function (event) {
-        console.log("error: ");
-    };
+    var request = {};
+    if (this.isAvailable) {
+        request = indexedDB.open("inapp");
+        request.onerror = function (event) {
+            console.log("error: ");
+        };
 
-    request.onsuccess = function (event) {
-        console.log("succsss")
-        var db = event.target.result;
-        var store = db.createObjectStore("states", { keyPath: "key" });
-        db.close();
-    };
-    request.onupgradeneeded = function (event) {
-        // The database did not previously exist, so create object stores and indexes.
-        console.log("doing upgrade");
-        var db = event.target.result;
-        var store = db.createObjectStore("states", { keyPath: "key" });
-        db.close();
-    };
+        request.onsuccess = function (event) {
+            console.log("succsss")
+            var db = event.target.result;
+            var store = db.createObjectStore("states", {
+                keyPath: "key"
+            });
+            db.close();
+        };
+        request.onupgradeneeded = function (event) {
+            // The database did not previously exist, so create object stores and indexes.
+            console.log("doing upgrade");
+            var db = event.target.result;
+            var store = db.createObjectStore("states", {
+                keyPath: "key"
+            });
+            db.close();
+        };
+    }
 
     FingerprintKey.prototype.getStateAsync = function (key, callback) {
         if (!key) {
@@ -108,7 +115,10 @@
             var db = event.target.result;
             var request = db.transaction(["states"], "readwrite")
                 .objectStore("states")
-                .add({ key: key, state: state });
+                .add({
+                    key: key,
+                    state: state
+                });
 
             request.onsuccess = function (event) {
                 db.close();
